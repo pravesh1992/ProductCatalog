@@ -28,7 +28,7 @@ public class ProductController {
   @ResponseBody
   public ResponseEntity<String> saveProduct(@RequestBody Product product) {
     Integer productId = productService.saveProduct(product);
-    return new ResponseEntity<>("Product added successfully. Product IdL" + productId, HttpStatus.OK);
+    return new ResponseEntity<>("Product added successfully. Product Id:" + productId, HttpStatus.OK);
   }
 
   @RequestMapping(method = RequestMethod.PUT, path = "/products")

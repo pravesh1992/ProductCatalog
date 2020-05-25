@@ -19,6 +19,8 @@ public class DBProductCategory {
   @Column(name = "product_category_name", unique = true)
   private String name;
 
+  @Column(name = "DATA", unique = false, nullable = false, length = 100000)
+  private byte[] rules;
 
   public Integer getId() {
     return id;
@@ -34,5 +36,13 @@ public class DBProductCategory {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public byte[] getRules() {
+    return rules;
+  }
+
+  public void setRules(byte[] rules) {
+    this.rules = rules;
   }
 }

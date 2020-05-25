@@ -11,7 +11,15 @@ public class Product implements Serializable {
   private String name;
   private String description;
   private String category;
-  private Set<String> modelingKeys;
+  private Set<Entry> modelingKeys;
+
+  public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
   public String getName() {
     return name;
@@ -37,19 +45,11 @@ public class Product implements Serializable {
     this.category = category;
   }
 
-  public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  public Set<String> getModelingKeys() {
+  public Set<Entry> getModelingKeys() {
     return modelingKeys;
   }
 
-  public void setModelingKeys(Set<String> modelingKeys) {
+  public void setModelingKeys(Set<Entry> modelingKeys) {
     this.modelingKeys = modelingKeys;
   }
 }

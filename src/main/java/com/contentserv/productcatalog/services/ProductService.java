@@ -1,5 +1,6 @@
 package com.contentserv.productcatalog.services;
 
+import com.contentserv.productcatalog.business.objects.Entry;
 import com.contentserv.productcatalog.business.objects.Product;
 import com.contentserv.productcatalog.repositores.ProductCategoryRepository;
 import com.contentserv.productcatalog.repositores.ProductRepository;
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -76,20 +79,25 @@ public class ProductService {
     dbProduct.setDbProductCategory(productCategory);
     dbProduct.setDescription(product.getDescription());
     if (product.getModelingKeys() != null && !product.getModelingKeys().isEmpty()) {
-      dbProduct.setModelingKeys(String.join("#", product.getModelingKeys()));
+      List<String> modelingKeys = product.getModelingKeys().stream().map(item -> item.getKey() + ":" + item.getValue()).collect(Collectors.toList());
+      dbProduct.setModelingKeys(String.join("#", modelingKeys));
     }
     return dbProduct;
   }
 
-  static Product convert(DBProduct dbProduct) {
+  public static Product convert(DBProduct dbProduct) {
     Product product = new Product();
     product.setId(dbProduct.getId());
     product.setName(dbProduct.getName());
     product.setCategory(dbProduct.getDbProductCategory().getName());
     product.setDescription(dbProduct.getDescription());
-    Set<String> modelingKeys = new HashSet<>();
-    if (StringUtils.isBlank(dbProduct.getModelingKeys())) {
-      new HashSet<>(Arrays.asList(dbProduct.getModelingKeys().split("#")));
+    Set<Entry> modelingKeys = new HashSet<>();
+    if (!StringUtils.isBlank(dbProduct.getModelingKeys())) {
+      List<String> modelingKeysWithHash = Arrays.asList(dbProduct.getModelingKeys().split("#"));
+      for (String modelKey : modelingKeysWithHash) {
+        String[] keyValue = modelKey.split(":");
+        modelingKeys.add(new Entry(keyValue[0], keyValue[1]));
+      }
     }
     product.setModelingKeys(modelingKeys);
     return product;

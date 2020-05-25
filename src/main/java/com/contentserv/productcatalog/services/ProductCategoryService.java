@@ -1,16 +1,18 @@
 package com.contentserv.productcatalog.services;
 
+import com.contentserv.productcatalog.business.objects.ValidationRule;
 import com.contentserv.productcatalog.repositores.ProductCategoryRepository;
 import com.contentserv.productcatalog.repositores.ProductModelingRepository;
 import com.contentserv.productcatalog.repositores.db.objects.DBProductCategory;
-import com.contentserv.productcatalog.repositores.db.objects.DBProductModelingAttribute;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductCategoryService {
@@ -21,31 +23,48 @@ public class ProductCategoryService {
   @Autowired
   private ProductModelingRepository productModelingRepository;
 
-  public String saveProductCategory(String name, List<String> modelingKeys) {
+  public String saveProductCategory(String name, List<ValidationRule> validationRules) {
     DBProductCategory dbProductCategory = productCategoryRepository.findOneByName(name);
     if (dbProductCategory == null) {
       dbProductCategory = new DBProductCategory();
       dbProductCategory.setName(name);
-      productCategoryRepository.save(dbProductCategory);
-    }
-
-    if (!CollectionUtils.isEmpty(modelingKeys)) {
-      List<DBProductModelingAttribute> dbProductModelingAttributes = new ArrayList<>();
-      for (String modelingKey : modelingKeys) {
-        dbProductModelingAttributes.add(new DBProductModelingAttribute(modelingKey, dbProductCategory));
+      if (!CollectionUtils.isEmpty(validationRules)) {
+        dbProductCategory.setRules(convertObjectToByteArray(validationRules));
       }
-      productModelingRepository.saveAll(dbProductModelingAttributes);
+      productCategoryRepository.save(dbProductCategory);
     }
 
     return name;
   }
 
-  public List<String> fetchProductCategoryModelingAttributes(String name) {
+  private static byte[] convertObjectToByteArray(Object obj) {
+    try {
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(bos);
+      oos.writeObject(obj);
+      oos.flush();
+      return bos.toByteArray();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to convert obj to byte array:" + e.getMessage());
+    }
+  }
+
+  public static List<ValidationRule> convertToListOfValidationRules(byte[] data) {
+    try {
+      ByteArrayInputStream in = new ByteArrayInputStream(data);
+      ObjectInputStream is = new ObjectInputStream(in);
+      return (List<ValidationRule>) is.readObject();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to convert byte[] to List of validation rules:" + e.getMessage());
+    }
+  }
+
+  public List<ValidationRule> fetchProductCategoryModelingAttributes(String name) {
     DBProductCategory dbProductCategory = productCategoryRepository.findOneByName(name);
     if (dbProductCategory == null) {
       throw new RuntimeException("No product category exists with name:" + name);
     }
-    return productModelingRepository.findAllProductModelingAttributes(dbProductCategory.getId()).stream().map(DBProductModelingAttribute::getName).collect(Collectors.toList());
+    return convertToListOfValidationRules(dbProductCategory.getRules());
   }
 
   public void deleteProductCategory(String name) {

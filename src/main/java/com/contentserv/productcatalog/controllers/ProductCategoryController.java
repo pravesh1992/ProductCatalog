@@ -1,5 +1,6 @@
 package com.contentserv.productcatalog.controllers;
 
+import com.contentserv.productcatalog.business.objects.ValidationRule;
 import com.contentserv.productcatalog.services.ProductCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,14 +23,14 @@ public class ProductCategoryController {
 
   @RequestMapping(method = RequestMethod.POST, path = "/product-category/{name}")
   @ResponseBody
-  public ResponseEntity<String> saveProductCategory(@PathVariable(name = "name") String name, @RequestBody List<String> modelingKeys) {
-    productCategoryService.saveProductCategory(name, modelingKeys);
+  public ResponseEntity<String> saveProductCategory(@PathVariable(name = "name") String name, @RequestBody List<ValidationRule> validationRules) {
+    productCategoryService.saveProductCategory(name, validationRules);
     return new ResponseEntity<>("Product category " + name + " is added successfully", HttpStatus.OK);
   }
 
   @RequestMapping(method = RequestMethod.GET, path = "/product-category/{name}")
   @ResponseBody
-  public List<String> fetchProductCategoryModelingAttributes(@PathVariable(name = "name") String name) {
+  public List<ValidationRule> fetchProductCategoryModelingAttributes(@PathVariable(name = "name") String name) {
     return productCategoryService.fetchProductCategoryModelingAttributes(name);
   }
 
